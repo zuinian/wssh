@@ -10,9 +10,13 @@
 
     <body>
         <div class="navbar navbar-fixed-top">
-            <div class="navbar-inner">
+            <div class="navbar-inner" style="text-align: center">
                 <div class="container">
-                    <a class="brand" href="#">wssh</a>
+                    <a class="brand">网宿wssh</a>
+                    <a class="brand fullscreenButton" href="javascript:void(0)" onclick="fullscreen()">全屏</a>
+                    <a class="brand exitFullscreenButton" href="javascript:void(0)" onclick="exitFullscreen()">退出全屏</a>
+                    <a class="brand"></a>
+                    <a class="brand" href="javascript:void(0)" onclick="closewin();">关闭</a>
                 </div>
             </div>
         </div>
@@ -28,46 +32,122 @@
         </script>
         <script type="application/javascript" src="{{url_for('static', filename='wssh.js')}}">
         </script>
-        <script type="application/javascript">
-            function openTerminal(options) {
-                var client = new WSSHClient();
-                var term = new Terminal(80, 30, function(key) {
-                    client.send(key);
-                });
-                term.open();
-                $('.terminal').detach().appendTo('#term');
-                term.resize(80, 30);
-                term.write('Connecting...');
-                client.connect($.extend(options, {
-                    onError: function(error) {
-                        term.write('Error: ' + error + '\r\n');
-                    },
-                    onConnect: function() {
-                        // Erase our connecting message
-                        term.write('\r');
-                    },
-                    onClose: function() {
-                        term.write('Connection Reset By Peer');
-                    },
-                    onData: function(data) {
-                        term.write(data);
-                    }
-                }));
+        <script type='application/javascript'>
+            /*$(document).ready(function() {
+             openTerminal(options, 80, 30);
+             });*/
+            /*由于下面的函数要用到term变量，所以这些操作不封装成函数了*/
+            $('.exitFullscreenButton').hide();
+            var options = {
+                username: getQueryString('username'),
+                password: getQueryString('password'),
+                hostname: getQueryString('hostname'),
+                port: getQueryString('port'),
+                command: '',
+                authentication_method: 'password'
+            };
+            var cols = 80, rows = 30;
+            var client = new WSSHClient();
+            var term = new Terminal(cols, rows, function(key) {
+                client.send(key);
+            });
+            term.open();
+            $('.terminal').detach().appendTo('#term');
+            term.resize(cols, rows);
+            term.write('Connecting...');
+            client.connect($.extend(options, {
+                onError: function(error) {
+                    term.write('Error: ' + error + '\r\n');
+                },
+                onConnect: function() {
+                    // Erase our connecting message
+                    term.write('\r');
+                },
+                onClose: function() {
+                    term.write('Connection Reset By Peer');
+                },
+                onData: function(data) {
+                    term.write(data);
+                }
+            }));
+            var fullscreen=function(){
+                $('.fullscreenButton').hide();
+                $('.exitFullscreenButton').show();
+                elem=document.body;
+                if(elem.webkitRequestFullScreen){
+                    elem.webkitRequestFullScreen();
+                }else if(elem.mozRequestFullScreen){
+                    elem.mozRequestFullScreen();
+                }else if(elem.requestFullScreen){
+                    elem.requestFullscreen();
+                }else{
+                    //浏览器不支持全屏API或已被禁用
+                }
+                if (window.screen.height > 900) {
+                    term.resize(80, 48);
+                }
+            };
+            var exitFullscreen=function(){
+                $('.fullscreenButton').show();
+                $('.exitFullscreenButton').hide();
+                var elem=document;
+                if(elem.webkitCancelFullScreen){
+                    elem.webkitCancelFullScreen();
+                }else if(elem.mozCancelFullScreen){
+                    elem.mozCancelFullScreen();
+                }else if(elem.cancelFullScreen){
+                    elem.cancelFullScreen();
+                }else if(elem.exitFullscreen){
+                    elem.exitFullscreen();
+                }else{
+                    //浏览器不支持全屏API或已被禁用
+                }
+                if (window.screen.height > 900) {
+                    term.resize(80, 30);
+                }
+            };
+            function closewin(){
+                if (navigator.userAgent.indexOf("Firefox") != -1 || navigator.userAgent.indexOf("Chrome") !=-1) {
+                    window.location.href="about:blank";
+                    window.close();
+                } else {
+                    window.opener = null;
+                    window.open("", "_self");
+                    window.close();
+                }
+            }
+            function getQueryString(name) {
+                var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+                var r = window.location.search.substr(1).match(reg);
+                if (r != null) return unescape(r[2]); return null;
             }
         </script>
-
-        <script type='application/javascript'>
-            $(document).ready(function() {
-                var options = {
-                    username: 'root',
-                    password: 'root',
-                    hostname: '192.168.2.3',
-                    port: 22,
-                    command: '',
-                    authentication_method: 'password'
-                };
-                openTerminal(options);
+        <!--<script type="application/javascript">
+        function openTerminal(options, cols, rows) {
+            var client = new WSSHClient();
+            var term = new Terminal(cols, rows, function(key) {
+                client.send(key);
             });
-        </script>
+            term.open();
+            $('.terminal').detach().appendTo('#term');
+            term.resize(cols, rows);
+            term.write('Connecting...');
+            client.connect($.extend(options, {
+                onError: function(error) {
+                    term.write('Error: ' + error + '\r\n');
+                },
+                onConnect: function() {
+                    // Erase our connecting message
+                    term.write('\r');
+                },
+                onClose: function() {
+                    term.write('Connection Reset By Peer');
+                },
+                onData: function(data) {
+                    term.write(data);
+                }
+            }));
+        }
+    </script>-->
     </body>
 </html>
