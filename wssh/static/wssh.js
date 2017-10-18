@@ -97,7 +97,11 @@ WSSHClient.prototype.connect = function(options) {
         options.onClose();
     };
 };
-
+WSSHClient.prototype.flag = true;
 WSSHClient.prototype.send = function(data) {
+    if(WSSHClient.prototype.flag){
+        this._connection.send(JSON.stringify({ 'resize': {'width': getCols(), 'height': getRows(0)}}));
+        WSSHClient.prototype.flag = false;
+    }
     this._connection.send(JSON.stringify({'data': data}));
 };

@@ -9,21 +9,15 @@
     </head>
 
     <body>
-        <div class="navbar navbar-fixed-top">
-            <div class="navbar-inner" style="text-align: center">
-                <div class="container">
-                    <a class="brand">网宿wssh</a>
-                    <a class="brand fullscreenButton" href="javascript:void(0)" onclick="fullscreen()">全屏</a>
-                    <a class="brand exitFullscreenButton" href="javascript:void(0)" onclick="exitFullscreen()">退出全屏</a>
-                    <a class="brand"></a>
-                    <a class="brand" href="javascript:void(0)" onclick="closewin();">关闭</a>
-                </div>
-            </div>
-        </div>
+        <nav id="nav">
+            <a class="">网宿wssh</a>
+            <!--右浮动-->
+            <a class="close-win" href="javascript:void(0)" onclick="closewin();" title="关闭页面"><span class="glyphicon glyphicon-remove"></span></a>
+            <a class="exit-fullscreen-button" href="javascript:void(0)" onclick="exitFullscreen()" title="退出全频"><span class="icon-fullscreen"></span></a>
+            <a class="fullscreen-button"      href="javascript:void(0)" onclick="fullscreen()"     title="全频">    <span class="icon-fullscreen"></span></a>
+        </nav>
 
-        <div class="container">
-            <div id="term">
-            </div>
+        <div id="term">
         </div>
 
         <script type="application/javascript" src="{{url_for('static', filename='jquery.min.js')}}">
@@ -33,23 +27,29 @@
         <script type="application/javascript" src="{{url_for('static', filename='wssh.js')}}">
         </script>
         <script type='application/javascript'>
-            /*$(document).ready(function() {
-             openTerminal(options, 80, 30);
-             });*/
             /*由于下面的函数要用到term变量，所以这些操作不封装成函数了*/
-            $('.exitFullscreenButton').hide();
+            $('.exit-fullscreen-button').hide();
+            //测试
+           /* var options = {
+                username: 'root',
+                password: 'root',
+                hostname: '192.168.2.3',
+                port: '22',
+                command: '',
+                authentication_method: 'password'
+            };*/
+
+            //风火轮使用
             var options = {
                 username: getQueryString('username'),
-                //password: getQueryString('password'),
-                //hostname: getQueryString('hostname'),
-                //port: getQueryString('port'),
                 password: '',
                 hostname: "10.8.216.16",
                 port: '60000',
                 command: '',
                 authentication_method: 'password'
             };
-            var cols = 80, rows = 30;
+            document.getElementsByTagName('body')[0].style.width = screen.width.toString() + 'px';
+            var cols = getCols(), rows = getRows(0);
             var client = new WSSHClient();
             var term = new Terminal(cols, rows, function(key) {
                 client.send(key);
@@ -74,8 +74,8 @@
                 }
             }));
             var fullscreen=function(){
-                $('.fullscreenButton').hide();
-                $('.exitFullscreenButton').show();
+                $('.fullscreen-button').hide();
+                $('.exit-fullscreen-button').show();
                 elem=document.body;
                 if(elem.webkitRequestFullScreen){
                     elem.webkitRequestFullScreen();
@@ -86,13 +86,11 @@
                 }else{
                     //浏览器不支持全屏API或已被禁用
                 }
-                if (window.screen.height > 900) {
-                    term.resize(80, 48);
-                }
+                term.resize(getCols(), getRows(1));
             };
             var exitFullscreen=function(){
-                $('.fullscreenButton').show();
-                $('.exitFullscreenButton').hide();
+                $('.fullscreen-button').show();
+                $('.exit-fullscreen-button').hide();
                 var elem=document;
                 if(elem.webkitCancelFullScreen){
                     elem.webkitCancelFullScreen();
@@ -105,12 +103,10 @@
                 }else{
                     //浏览器不支持全屏API或已被禁用
                 }
-                if (window.screen.height > 900) {
-                    term.resize(80, 30);
-                }
+                term.resize(getCols(), getRows(0));
             };
             function closewin(){
-                if (navigator.userAgent.indexOf("Firefox") != -1 || navigator.userAgent.indexOf("Chrome") !=-1) {
+                if (navigator.userAgent.indexOf("Firefox") != -1 || navigator.userAgent.indexOf("Chrome") != -1) {
                     window.location.href="about:blank";
                     window.close();
                 } else {
@@ -123,6 +119,30 @@
                 var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
                 var r = window.location.search.substr(1).match(reg);
                 if (r != null) return unescape(r[2]); return null;
+            }
+
+            function getCols() {
+                var cols = 182;
+                if (typeof screen.height != 'undefined') {
+                    cols = Math.floor(screen.width / 7.3);//font-size: 12px;量的宽度好像是7.5px
+                }
+                return cols;
+            }
+            function getRows(isFullscreeen) {
+                var rows = 35;
+                if (isFullscreeen) {
+                    rows = 41;
+                    if (typeof screen.height != 'undefined') {
+                        rows = Math.floor((screen.height - 20) / 18);
+                    }
+                }
+                else {
+                    rows = 35;
+                    if (typeof screen.height != 'undefined') {
+                        rows = Math.floor((screen.height - 146) / 18);//146为浏览器最大化后顶部到命令行的距离
+                    }
+                }
+                return rows;
             }
         </script>
         <!--<script type="application/javascript">
